@@ -15,6 +15,7 @@ public class paintcomponent extends JPanel {
 	private JLabel naruto;
 	private JLabel supercampeones;
 	private JLabel Bleach;
+	private JLabel AtaqueAlosTitanes;
 	
 	
 	public paintcomponent() {
@@ -41,6 +42,27 @@ public class paintcomponent extends JPanel {
 		Labelnaruto();
 		LabelsuperCampeones();
 		LabelBleach();
+		LabelAtaqueAlosTitanes();
+		
+	}
+	private void LabelAtaqueAlosTitanes() {
+		naruto= new JLabel("Ver a Ataque a los titanes");
+		naruto.setBounds(10,140,180,30);
+		naruto.setFont(new Font("Bell MT",Font.BOLD, 14));
+		naruto.setBackground(Color.BLACK);
+		naruto.setForeground(Color.white);
+		naruto.setBorder(new BevelBorder(BevelBorder.RAISED));
+		add(naruto);
+		naruto.addMouseListener(new MouseAdapter() {
+			
+			@Override
+			public void mousePressed(MouseEvent e) {
+				super.mousePressed(e);
+				Ataque_a_los_titanes n = new Ataque_a_los_titanes();
+				n.frame.setVisible(true);
+				
+			}
+		});
 		
 	}
 	private void Labelnaruto() {

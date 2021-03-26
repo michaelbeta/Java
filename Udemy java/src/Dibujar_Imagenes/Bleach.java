@@ -23,7 +23,7 @@ public class Bleach extends JPanel{
 			
 			e.printStackTrace();
 		}
-		frame=new JFrame("Naruto");
+		frame=new JFrame("Bleach");
 		frame.setIconImage(Bleach);
 		
 		frame.setBounds(50,50,Bleach.getWidth(this),Bleach.getHeight(this));

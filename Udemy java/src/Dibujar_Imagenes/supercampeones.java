@@ -23,7 +23,7 @@ public class supercampeones extends JPanel{
 			
 			e.printStackTrace();
 		}
-		frame=new JFrame("Naruto");
+		frame=new JFrame("Supercampeones");
 		frame.setIconImage(superC);
 		frame.setBounds(50,50,superC.getWidth(this),superC.getHeight(this));
 		frame.setContentPane(this);
