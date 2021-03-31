@@ -21,6 +21,7 @@ public class multiplesEventos extends JFrame{
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		IniciarComponentes();
 		add(miPanel);
+		
 		setVisible(true);
 	}
 
@@ -30,15 +31,15 @@ public class multiplesEventos extends JFrame{
 		miPanel.setBackground(Color.BLACK);
 		Algerian = new JButton(new Eventos_de_los_Botones("Algerian",new Font("Algerian",Font.PLAIN,18)));
 		Algerian.setBounds(50, 10,100,40);
-		Algerian.setToolTipText("Fuente Algerian");
+		Algerian.setToolTipText("Tambien puede pulsar E");
 		miPanel.add(Algerian);
 		Times_New_Roman= new JButton(new Eventos_de_los_Botones("Times New Roman",new Font("Times New Roman",Font.PLAIN,18)));
 		Times_New_Roman.setBounds(150, 10,150,40);
-		Times_New_Roman.setToolTipText("Fuente Times New Roman");
+		Times_New_Roman.setToolTipText("Tambien puede pulsar Q");
 		miPanel.add(Times_New_Roman);
 		Bauhaus_93=new JButton(new Eventos_de_los_Botones("Bauhaus 93",new Font("Bauhaus 93",Font.PLAIN,18)));
 		Bauhaus_93.setBounds(300, 10,130,40);
-		Bauhaus_93.setToolTipText("Fuente Bauhaus 93");
+		Bauhaus_93.setToolTipText("Tambien puede pulsar W");
 		miPanel.add(Bauhaus_93);
 		editorTexto=new JTextArea("Arial es la fuente por defecto");
 		editorTexto.setFont(new Font(null, Font.PLAIN,18));
@@ -49,7 +50,20 @@ public class multiplesEventos extends JFrame{
 		scroll.setBorder(BorderFactory.createMatteBorder(2, 2, 2, 2, Color.black));
 		miPanel.add(scroll);
 		
+		eventoConTeclas();
 		
+		
+	}
+	private void eventoConTeclas() {
+		InputMap MapaEntrada = miPanel.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);//1- Crear mapa de entrada
+		MapaEntrada.put(KeyStroke.getKeyStroke('Q'),"Times New Roman");//2-Crear combinaciones de teclas
+		MapaEntrada.put(KeyStroke.getKeyStroke('W'),"Bauhaus 93");
+		MapaEntrada.put(KeyStroke.getKeyStroke("E"),"Algerian");
+		ActionMap mapaAccion=miPanel.getActionMap();
+		
+		mapaAccion.put("Times New Roman", new Eventos_de_los_Botones("Times New Roman",new Font("Times New Roman",Font.PLAIN,18)) );//3-Asignar combinaciones de teclas a objeto-descripción
+		mapaAccion.put("Bauhaus 93",new Eventos_de_los_Botones("Bauhaus 93",new Font("Bauhaus 93",Font.PLAIN,18)));
+		mapaAccion.put("Algerian",new Eventos_de_los_Botones("Algerian",new Font("Algerian",Font.PLAIN,18)));
 		
 	}
 	private class Eventos_de_los_Botones extends AbstractAction{
