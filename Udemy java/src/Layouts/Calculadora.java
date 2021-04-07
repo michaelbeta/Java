@@ -5,18 +5,30 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
-
+import Atxy2k.CustomTextField.RestrictedTextField;
 import javax.swing.*;
+
+
 
 
 public class Calculadora extends JFrame {
 
 	private JPanel panelPrincipal;
 	private JPanel Pantalla;
-	protected JTextField display;
-	protected JTextField historialNumeros;
+	private JTextField display;
+	private JTextField historialNumeros;
 	private PanelDeTeclas mipanel;
-
+	private String resultadoParaBotonIgua;//Almacena el resultado cuando se necesita usar =
+	private boolean UsoIgual=false;//Si uso el boton igual
+	private boolean SeElimino=false;//Borrar digito ingresado anteriormente
+	private estadoBotones estadoDeLosBotones;
+	private estadoBotones BotonEnUso;
+	private int aumentoElSignoEnHistorial=0;
+	private ArrayList<Double> operacionDeNuemros = new ArrayList<Double>();
+	private boolean completarAccion = false;//si en memoria existe un operador ej: /,-,*
+	private String resultado;//almacena la operacion resultante y el otro se usa para cuando se presiona =
+	
+	
 	public Calculadora() {
 
 		setSize(325, 389);
@@ -26,11 +38,12 @@ public class Calculadora extends JFrame {
 		setTitle("Calculadora Basica");
 		//setType(Type.UTILITY);
 		setFocusable(false);
-		iniciaerComponentes();
+		iniciarComponentes();
+		estadoDeLosBotones=estadoBotones.INACTIVO;
 		setVisible(true);
 	}
 
-	private void iniciaerComponentes() {
+	private void iniciarComponentes() {
 
 		panelPrincipal = new JPanel();
 		panelPrincipal.setBackground(new Color(14, 20, 13));
@@ -43,7 +56,7 @@ public class Calculadora extends JFrame {
 		mipanel = new PanelDeTeclas();
 		panelPrincipal.add(mipanel, BorderLayout.SOUTH);
 		panelPrincipal.add(Pantalla, BorderLayout.NORTH);
-		display = new JTextField("0", 16);
+		display = new JTextField("0");
 		display.setFont(new Font("Arial Rounded MT Bold", Font.PLAIN, 45));
 		display.setHorizontalAlignment(SwingConstants.RIGHT);
 		display.setBackground(new Color(14, 20, 13));
@@ -52,6 +65,7 @@ public class Calculadora extends JFrame {
 		display.setEditable(false);
 		display.requestFocus();
 		display.addKeyListener(new ResponderAlTeclado());
+		
 		historialNumeros = new JTextField("", 16);
 		historialNumeros.setFont(new Font("Arial Rounded MT Bold", Font.PLAIN, 20));
 		historialNumeros.setBackground(new Color(14, 20, 13));
@@ -62,14 +76,18 @@ public class Calculadora extends JFrame {
 		historialNumeros.setFocusable(false);
 		Pantalla.add(display, BorderLayout.SOUTH);
 		Pantalla.add(historialNumeros, BorderLayout.NORTH);
+		
 	}
 
 	private class ResponderAlTeclado extends KeyAdapter {
 
+		
 		@Override
 		public void keyPressed(KeyEvent e) {
 			super.keyPressed(e);
-
+			
+			solo11caracteres();
+			
 			/*
 			 * if(e.getKeyText(e.getKeyCode()).equalsIgnoreCase("Backspace"))display.gett
 			 * else
@@ -79,7 +97,18 @@ public class Calculadora extends JFrame {
 		}
 
 	}
-
+	private void solo11caracteres() {
+		
+		int maximoCaracteres=11;
+		if(display.getText().length()>=maximoCaracteres) {
+			
+			StringBuilder BorrarultimoDigito = new StringBuilder(display.getText());
+			String ultimoDigito ;
+				BorrarultimoDigito = BorrarultimoDigito.deleteCharAt(display.getText().length() - 1);
+				ultimoDigito = BorrarultimoDigito.toString();
+				display.setText(ultimoDigito);
+		}
+	}
 	private class PanelDeTeclas extends JPanel {
 
 		/**
@@ -90,12 +119,13 @@ public class Calculadora extends JFrame {
 				mas, posi_negat, cero, coma, igual;
 
 		public PanelDeTeclas() {
-
+			
 			setLayout(new GridLayout(5, 4, 2, 2));
 			setBackground(new Color(41, 26, 23));
 			for (int j = 1; j <= 20; j++) {
 				CrearBotones(j);
 			}
+			
 		}
 
 		private void CrearBotones(int Nboton) {
@@ -211,99 +241,428 @@ public class Calculadora extends JFrame {
 			 * 
 			 */
 			private static final long serialVersionUID = 1L;
-			private boolean completarAccion = false;
-			private String resultado;
-			private ArrayList<Double> operacionDeNuemros = new ArrayList<Double>();
-
+			
+			
 			@Override
 			public void actionPerformed(ActionEvent e) {
-
+				
 				if (e.getSource() == CE) {
 					display.setText("0");
 				
 				}else if (e.getSource() == C) {
+					
 					display.setText("0");
 					historialNumeros.setText("");
 					 completarAccion = false;
 					 operacionDeNuemros.clear();
+					 
 				} else if (e.getSource() == retroceso) {
 
 					display.setText(BorrarUltimoDigito(display.getText()));
 
 				} else if (e.getSource() == dividir) {
-					Dividir();
+					
+					if(UsoIgual) {
+						
+						ExisteENHistorialIgual();
+						operacionDeNuemros.clear();
+						Dividir();
+					}else Dividir();
 					
 					
 				} else if (e.getSource() == siete) {
-
-						display.setText(display.getText() + "7");
+						
+						ExisteENHistorialIgual();
+						if(UsoIgual) {
+							display.setText("");
+							resultadoParaBotonIgua="";
+							resultado="";
+							operacionDeNuemros.clear();
+							completarAccion=false;
+							UsoIgual=false;
+							SeElimino=false;
+							UsoIgual=false;
+						}
+				if(!BorrarDigitoViejo(historialNumeros.getText(),"7",estadoDeLosBotones,estadoBotones.SIETE))display.setText(display.getText() + "7");
+						
+				if(!ExistePunto((display.getText()))) {
+					
+					String quitarCero = BorrarPrimerDigito(display.getText());
+					display.setText(quitarCero);
+				}
+				solo11caracteres();
+				
+				}else if(e.getSource() == ocho) {
+					
+					ExisteENHistorialIgual();
+					if(UsoIgual) {
+						display.setText("");
+						resultadoParaBotonIgua="";
+						resultado="";
+						operacionDeNuemros.clear();
+						completarAccion=false;
+						UsoIgual=false;
+						SeElimino=false;
+						UsoIgual=false;
+					}
+					if(!BorrarDigitoViejo(historialNumeros.getText(),"8",estadoDeLosBotones,estadoBotones.OCHO))display.setText(display.getText() + "8");
+					
+					if(!ExistePunto((display.getText()))) {
+						
 						String quitarCero = BorrarPrimerDigito(display.getText());
 						display.setText(quitarCero);
-					
-				}else if(e.getSource() == ocho) {
-					display.setText(display.getText() + "8");
-					String quitarCero = BorrarPrimerDigito(display.getText());
-					display.setText(quitarCero);
+					}
+					solo11caracteres();
 					
 				}else if(e.getSource() == nueve) {
-					display.setText(display.getText() + "9");
-					String quitarCero = BorrarPrimerDigito(display.getText());
-					display.setText(quitarCero);
+					
+					ExisteENHistorialIgual();
+					if(UsoIgual) {
+						display.setText("");
+						resultadoParaBotonIgua="";
+						resultado="";
+						operacionDeNuemros.clear();
+						completarAccion=false;
+						UsoIgual=false;
+						SeElimino=false;
+						UsoIgual=false;
+					}
+					if(!BorrarDigitoViejo(historialNumeros.getText(),"9",estadoDeLosBotones,estadoBotones.NUEVE))display.setText(display.getText() + "9");
+					
+					if(!ExistePunto((display.getText()))) {
+						
+						String quitarCero = BorrarPrimerDigito(display.getText());
+						display.setText(quitarCero);
+					}
+					solo11caracteres();
 					
 				}else if(e.getSource() == X) {
 					
-					Multiplicar();
-				}else if(e.getSource() == cuatro) {
-					display.setText(display.getText() + "4");
-					String quitarCero = BorrarPrimerDigito(display.getText());
-					display.setText(quitarCero);
+						if(UsoIgual) {
+						
+						ExisteENHistorialIgual();
+						operacionDeNuemros.clear();
+						Multiplicar();
+						
+					}else Multiplicar();
 					
+				}else if(e.getSource() == cuatro) {
+					
+					ExisteENHistorialIgual();
+					if(UsoIgual) {
+						display.setText("");
+						resultadoParaBotonIgua="";
+						resultado="";
+						operacionDeNuemros.clear();
+						completarAccion=false;
+						UsoIgual=false;
+						SeElimino=false;
+						UsoIgual=false;
+					}
+					if(!BorrarDigitoViejo(historialNumeros.getText(),"4",estadoDeLosBotones,estadoBotones.CUATRO))display.setText(display.getText() + "4");
+					
+					if(!ExistePunto((display.getText()))) {
+						
+						String quitarCero = BorrarPrimerDigito(display.getText());
+						display.setText(quitarCero);
+					}
+					solo11caracteres();
+				
 				}else if(e.getSource() == cinco) {
 					
-					display.setText(display.getText() + "5");
-					String quitarCero = BorrarPrimerDigito(display.getText());
-					display.setText(quitarCero);
+					ExisteENHistorialIgual();
+					if(UsoIgual) {
+						display.setText("");
+						resultadoParaBotonIgua="";
+						resultado="";
+						operacionDeNuemros.clear();
+						completarAccion=false;
+						UsoIgual=false;
+						SeElimino=false;
+						UsoIgual=false;
+					}
+					if(!BorrarDigitoViejo(historialNumeros.getText(),"5",estadoDeLosBotones,estadoBotones.CINCO))display.setText(display.getText() + "5");
+					
+					if(!ExistePunto((display.getText()))) {
+						
+						String quitarCero = BorrarPrimerDigito(display.getText());
+						display.setText(quitarCero);
+					}
+					solo11caracteres();
+					
 				}else if(e.getSource() == seis) {
-					display.setText(display.getText() + "6");
-					String quitarCero = BorrarPrimerDigito(display.getText());
-					display.setText(quitarCero);
+					
+					ExisteENHistorialIgual();
+					if(UsoIgual) {
+						display.setText("");
+						resultadoParaBotonIgua="";
+						resultado="";
+						operacionDeNuemros.clear();
+						completarAccion=false;
+						UsoIgual=false;
+						SeElimino=false;
+						UsoIgual=false;
+					}
+					if(!BorrarDigitoViejo(historialNumeros.getText(),"6",estadoDeLosBotones,estadoBotones.SEIS))display.setText(display.getText() + "6");
+					
+					if(!ExistePunto((display.getText()))) {
+						
+						String quitarCero = BorrarPrimerDigito(display.getText());
+						display.setText(quitarCero);
+					}
+					solo11caracteres();
 					
 				}else if(e.getSource() == menos) {
+						
+						if(UsoIgual) {
+						
+						ExisteENHistorialIgual();
+						operacionDeNuemros.clear();
 						Restar();
+					}
+					else Restar();
 					
 				}else if(e.getSource() == uno) {
-					display.setText(display.getText() + "1");
-					String quitarCero = BorrarPrimerDigito(display.getText());
-					display.setText(quitarCero);
+					
+					ExisteENHistorialIgual();
+					if(UsoIgual) {
+						display.setText("");
+						resultadoParaBotonIgua="";
+						resultado="";
+						operacionDeNuemros.clear();
+						completarAccion=false;
+						UsoIgual=false;
+						SeElimino=false;
+						UsoIgual=false;
+					}
+					if(!BorrarDigitoViejo(historialNumeros.getText(),"1",estadoDeLosBotones,estadoBotones.UNO))display.setText(display.getText() + "1");
+					
+					if(!ExistePunto((display.getText()))) {
+						
+						String quitarCero = BorrarPrimerDigito(display.getText());
+						display.setText(quitarCero);
+					}
+					solo11caracteres();
 					
 				}else if(e.getSource() == dos) {
-					display.setText(display.getText() + "2");
-					String quitarCero = BorrarPrimerDigito(display.getText());
-					display.setText(quitarCero);
+					
+					ExisteENHistorialIgual();
+					if(UsoIgual) {
+						display.setText("");
+						resultadoParaBotonIgua="";
+						resultado="";
+						operacionDeNuemros.clear();
+						completarAccion=false;
+						UsoIgual=false;
+						SeElimino=false;
+						UsoIgual=false;
+					}
+					if(!BorrarDigitoViejo(historialNumeros.getText(),"2",estadoDeLosBotones,estadoBotones.DOS))display.setText(display.getText() + "2");
+					
+					if(!ExistePunto((display.getText()))) {
+						
+						String quitarCero = BorrarPrimerDigito(display.getText());
+						display.setText(quitarCero);
+					}
+					solo11caracteres();
 					
 				}else if(e.getSource() == tres) {
-					display.setText(display.getText() + "3");
-					String quitarCero = BorrarPrimerDigito(display.getText());
-					display.setText(quitarCero);
+					
+					ExisteENHistorialIgual();
+					if(UsoIgual) {
+						display.setText("");
+						resultadoParaBotonIgua="";
+						resultado="";
+						operacionDeNuemros.clear();
+						completarAccion=false;
+						UsoIgual=false;
+						SeElimino=false;
+						UsoIgual=false;
+					}
+					if(!BorrarDigitoViejo(historialNumeros.getText(),"3",estadoDeLosBotones,estadoBotones.TRES))	display.setText(display.getText() + "3");
+				
+					if(!ExistePunto((display.getText()))) {
+						
+						String quitarCero = BorrarPrimerDigito(display.getText());
+						display.setText(quitarCero);
+					}
+					solo11caracteres();
 					
 				}else if(e.getSource() == mas) {
-					Sumar();
+					
+						if(UsoIgual) {
+						
+						ExisteENHistorialIgual();
+						operacionDeNuemros.clear();
+						Sumar();
+					}
+					else Sumar();
 					
 				}else if(e.getSource() == posi_negat) {
 					
+					if(display.getText().contains("-")) {
+						
+						String nuevoNumero=display.getText().replace("-","");
+						display.setText(nuevoNumero);}
+					
+					else display.setText("-"+display.getText());
 					
 				}else if(e.getSource() == cero) {
-					display.setText(display.getText() + "0");
-					String quitarCero = BorrarPrimerDigito(display.getText());
-					display.setText(quitarCero);
+					
+					if(UsoIgual) {
+						display.setText("0");
+						resultadoParaBotonIgua="";
+						resultado="";
+						operacionDeNuemros.clear();
+						completarAccion=false;
+						UsoIgual=false;
+						SeElimino=false;
+						UsoIgual=false;
+					}
+					ExisteENHistorialIgual();
+					
+					if(!ExistePunto((display.getText()))) {
+						
+						String quitarCero = BorrarPrimerDigito(display.getText());
+						display.setText(quitarCero);
+					}
+						
+					if(!BorrarDigitoViejo(historialNumeros.getText(),"0",estadoDeLosBotones,
+							estadoBotones.CERO))display.setText(display.getText() + "0");
+					
+					
+						
+					
+				
 					
 				}else if(e.getSource() == coma) {
-					
+					if(!display.getText().contains("."))display.setText(display.getText() + ".");
 					
 				}else if(e.getSource() == igual) {
 					
+					CompletarResultadoConIgual();
+									}
+			}
+			private boolean ExistePunto(String historial) {
+				
+				if(historial.contains(".")) return true;
+				else return false;
 					
+				
+			}
+			private void ExisteENHistorialIgual() {
+				
+				if(historialNumeros.getText().contains("="))historialNumeros.setText("");
+				
+			}
+			private void CompletarResultadoConIgual() {
+				
+				
+				String resultado="";
+				int cantidadDeOperador=0;
+				
+				if(historialNumeros.getText().contains("÷")) {//si es dividir
+				
+					for (int i = 0; i < historialNumeros.getText().length(); i++) {
+						
+						if(historialNumeros.getText().charAt(i)!='÷') {
+							
+							
+							if(cantidadDeOperador==0) {
+								
+								resultado+=historialNumeros.getText().charAt(i);
+								
+							}else {
+								resultado=resultadoParaBotonIgua;	
+								
+							}
+						}else cantidadDeOperador++;
+						
+					}
+				
+					double dividir= Double.parseDouble(resultado)/ Double.parseDouble(display.getText());
+					resultado=verificarDecimal(dividir);
+					historialNumeros.setText(historialNumeros.getText()+display.getText()+"=");
+					cantidadDeOperador=0;
+					
+				}else if(historialNumeros.getText().contains("x")) {//si es multiplicar
+				
+					for (int i = 0; i < historialNumeros.getText().length(); i++) {
+						
+						if(historialNumeros.getText().charAt(i)!='x') {
+							
+							
+							if(cantidadDeOperador==0) {
+								
+								resultado+=historialNumeros.getText().charAt(i);
+								
+							}else {
+								resultado=resultadoParaBotonIgua;	
+								
+							}
+						}else cantidadDeOperador++;
+						
+					}
+				
+					double dividir= Double.parseDouble(resultado)* Double.parseDouble(display.getText());
+					resultado=verificarDecimal(dividir);
+					historialNumeros.setText(historialNumeros.getText()+display.getText()+"=");
+					cantidadDeOperador=0;
+					
+				}else if(historialNumeros.getText().contains("+")) {//si es sumar
+				
+					for (int i = 0; i < historialNumeros.getText().length(); i++) {
+						
+						if(historialNumeros.getText().charAt(i)!='+') {
+							
+							
+							if(cantidadDeOperador==0) {
+								
+								resultado+=historialNumeros.getText().charAt(i);
+								
+							}else {
+								resultado=resultadoParaBotonIgua;	
+								
+							}
+						}else cantidadDeOperador++;
+						
+					}
+				
+					double dividir= Double.parseDouble(resultado)+ Double.parseDouble(display.getText());
+					resultado=verificarDecimal(dividir);
+					historialNumeros.setText(historialNumeros.getText()+display.getText()+"=");
+					cantidadDeOperador=0;
+					
+				}else if(historialNumeros.getText().contains("-")) {//si es menos
+				
+					for (int i = 0; i < historialNumeros.getText().length(); i++) {
+						
+						if(historialNumeros.getText().charAt(i)!='-') {
+							
+							
+							if(cantidadDeOperador==0) {
+								
+								resultado+=historialNumeros.getText().charAt(i);
+								
+							}else {
+								resultado=resultadoParaBotonIgua;	
+								
+							}
+						}else cantidadDeOperador++;
+						
+					}
+				
+					double dividir= Double.parseDouble(resultado)- Double.parseDouble(display.getText());
+					resultado=verificarDecimal(dividir);
+					historialNumeros.setText(historialNumeros.getText()+display.getText()+"=");
+					cantidadDeOperador=0;
 				}
+				display.setText(resultado);
+				//historialNumeros.setText("");
+				UsoIgual=true;
+				resultado="";
+				completarAccion=false;
+				
 			}
 			private void Dividir() {
 				
@@ -327,6 +686,7 @@ public class Calculadora extends JFrame {
 					
 					display.setText(verificarDecimal(divid));
 					resultado=display.getText();
+					resultadoParaBotonIgua=display.getText();
 					historialNumeros.setText(historialNumeros.getText()+"÷");
 					completarAccion = false;
 					operacionDeNuemros.clear();
@@ -344,6 +704,7 @@ public class Calculadora extends JFrame {
 
 					display.setText(verificarDecimal(divid));
 					resultado=display.getText();
+					resultadoParaBotonIgua=display.getText();
 					historialNumeros.setText(historialNumeros.getText()+"÷");//signo despues del resultado despues del resultado
 					completarAccion = false;
 					
@@ -354,12 +715,13 @@ public class Calculadora extends JFrame {
 					
 						
 					}else if (!completarAccion) {
-						System.out.println(completarAccion);
+						
 						if(historialNumeros.getText().length()<1) {
 							
 							operacionDeNuemros.add(Double.parseDouble(display.getText()));
 							historialNumeros.setText(display.getText() + "÷");
-							completarAccion = true;
+							
+							 completarAccion=true;
 							resultado=null;
 							
 						}else {
@@ -368,84 +730,87 @@ public class Calculadora extends JFrame {
 								operacionDeNuemros.add(Double.parseDouble(display.getText()));
 								historialNumeros.setText(historialNumeros.getText()+display.getText());
 								completarAccion = true;
-								
+						
 								Dividir();
 						}
 					}
 					}
 				
-				
+			
 				
 			}
 			private void Multiplicar() {
 				
 				
 				if (completarAccion) {
-				if(resultado==null) {//Primera operacion sin un resultado almacenado
-					
-					historialNumeros.setText(historialNumeros.getText() + display.getText());
-					
-					if(ComprobarOperacion(historialNumeros.getText())) {
+					if(resultado==null) {//Primera operacion sin un resultado almacenado
 						
-					operacionDeNuemros.add(Double.parseDouble(display.getText()));
-					
-					
-					double divid=1;
-					for (int i = operacionDeNuemros.size()-1; i >=0; i--) {
+						historialNumeros.setText(historialNumeros.getText() + display.getText());
 						
-						 divid=operacionDeNuemros.get(i)*divid;
-						
-					}
-					
-					display.setText(verificarDecimal(divid));
-					resultado=display.getText();
-					historialNumeros.setText(historialNumeros.getText()+"x");
-					completarAccion = false;
-					operacionDeNuemros.clear();
-					
-						}
-					//Si existe un resultado se procede acontinuacion
-				}else {	
-					
-					if(ComprobarOperacion(historialNumeros.getText())) {
-						
-					operacionDeNuemros.add(Double.parseDouble(resultado));
-					
-	
-					double divid=operacionDeNuemros.get(1)*operacionDeNuemros.get(0);
-
-					display.setText(verificarDecimal(divid));
-					resultado=display.getText();
-					historialNumeros.setText(historialNumeros.getText()+"x");//signo despues del resultado despues del resultado
-					completarAccion = false;
-					
-					operacionDeNuemros.clear();
-					
-					}
-					}		
-					
-						
-					}else if (!completarAccion) {
-						System.out.println(completarAccion);
-						if(historialNumeros.getText().length()<1) {
+						if(ComprobarOperacion(historialNumeros.getText())) {
 							
-							operacionDeNuemros.add(Double.parseDouble(display.getText()));
-							historialNumeros.setText(display.getText() + "x");
-							completarAccion = true;
-							resultado=null;
+						operacionDeNuemros.add(Double.parseDouble(display.getText()));
 						
-						}else {
-							if(historialNumeros.getText().charAt(historialNumeros.getText().length()-1)=='x') {
+						
+						double Multiplicar=1;
+						for (int i = operacionDeNuemros.size()-1; i >=0; i--) {
+							
+							 Multiplicar=operacionDeNuemros.get(i)*Multiplicar;
+							
+						}
+						
+						display.setText(verificarDecimal(Multiplicar));
+						resultado=display.getText();
+						resultadoParaBotonIgua=display.getText();
+						historialNumeros.setText(historialNumeros.getText()+"x");
+						completarAccion = false;
+						operacionDeNuemros.clear();
+						
+							}
+						//Si existe un resultado se procede acontinuacion
+					}else {	
+						
+						if(ComprobarOperacion(historialNumeros.getText())) {
+							
+						operacionDeNuemros.add(Double.parseDouble(resultado));
+						
+		
+						double divid=operacionDeNuemros.get(1)*operacionDeNuemros.get(0);
+
+						display.setText(verificarDecimal(divid));
+						resultado=display.getText();
+						resultadoParaBotonIgua=display.getText();
+						historialNumeros.setText(historialNumeros.getText()+"x");//signo despues del resultado despues del resultado
+						completarAccion = false;
+						
+						operacionDeNuemros.clear();
+						
+						}
+						}		
+						
+							
+						}else if (!completarAccion) {
+							
+							if(historialNumeros.getText().length()<1) {
 								
 								operacionDeNuemros.add(Double.parseDouble(display.getText()));
-								historialNumeros.setText(historialNumeros.getText()+display.getText());
-								completarAccion = true;
+								historialNumeros.setText(display.getText() + "x");
 								
-								Multiplicar();
+								 completarAccion=true;
+								resultado=null;
+								
+							}else {
+								if(historialNumeros.getText().charAt(historialNumeros.getText().length()-1)=='x') {
+									
+									operacionDeNuemros.add(Double.parseDouble(display.getText()));
+									historialNumeros.setText(historialNumeros.getText()+display.getText());
+									completarAccion = true;
+							
+									Multiplicar();
+							}
 						}
-					}
-					}
-				
+						}
+					
 				
 				
 			}		
@@ -453,143 +818,148 @@ public class Calculadora extends JFrame {
 				
 				
 				if (completarAccion) {
-				if(resultado==null) {//Primera operacion sin un resultado almacenado
-					
-					historialNumeros.setText(historialNumeros.getText() + display.getText());
-					
-					if(ComprobarOperacion(historialNumeros.getText())) {
+					if(resultado==null) {//Primera operacion sin un resultado almacenado
 						
-					operacionDeNuemros.add(Double.parseDouble(display.getText()));
-					
-					
-					double sumar=0;
-					for (int i = operacionDeNuemros.size()-1; i >=0; i--) {
+						historialNumeros.setText(historialNumeros.getText() + display.getText());
 						
-						 sumar=operacionDeNuemros.get(i)+sumar;
-						
-					}
-					
-					display.setText(verificarDecimal(sumar));
-					resultado=display.getText();
-					historialNumeros.setText(historialNumeros.getText()+"+");
-					completarAccion = false;
-					operacionDeNuemros.clear();
-					
-						}
-					//Si existe un resultado se procede acontinuacion
-				}else {	
-					
-					if(ComprobarOperacion(historialNumeros.getText())) {
-						
-					operacionDeNuemros.add(Double.parseDouble(resultado));
-					
-	
-					double sumar=operacionDeNuemros.get(1)+operacionDeNuemros.get(0);
-
-					display.setText(verificarDecimal(sumar));
-					resultado=display.getText();
-					historialNumeros.setText(historialNumeros.getText()+"+");//signo despues del resultado despues del resultado
-					completarAccion = false;
-					
-					operacionDeNuemros.clear();
-					
-					}
-					}		
-					
-						
-					}else if (!completarAccion) {
-						System.out.println(completarAccion);
-						if(historialNumeros.getText().length()<1) {
+						if(ComprobarOperacion(historialNumeros.getText())) {
 							
-							operacionDeNuemros.add(Double.parseDouble(display.getText()));
-							historialNumeros.setText(display.getText() + "+");
-							completarAccion = true;
-							resultado=null;
+						operacionDeNuemros.add(Double.parseDouble(display.getText()));
 						
-						}else {
-							if(historialNumeros.getText().charAt(historialNumeros.getText().length()-1)=='+') {
+						
+						double sumar=0;
+						for (int i = operacionDeNuemros.size()-1; i >=0; i--) {
+							
+							 sumar=operacionDeNuemros.get(i)+sumar;
+							
+						}
+						
+						display.setText(verificarDecimal(sumar));
+						resultado=display.getText();
+						resultadoParaBotonIgua=display.getText();
+						historialNumeros.setText(historialNumeros.getText()+"+");
+						completarAccion = false;
+						operacionDeNuemros.clear();
+						
+							}
+						//Si existe un resultado se procede acontinuacion
+					}else {	
+						
+						if(ComprobarOperacion(historialNumeros.getText())) {
+							
+						operacionDeNuemros.add(Double.parseDouble(resultado));
+						
+		
+						double sumar=operacionDeNuemros.get(1)+operacionDeNuemros.get(0);
+
+						display.setText(verificarDecimal(sumar));
+						resultado=display.getText();
+						resultadoParaBotonIgua=display.getText();
+						historialNumeros.setText(historialNumeros.getText()+"+");//signo despues del resultado despues del resultado
+						completarAccion = false;
+						
+						operacionDeNuemros.clear();
+						
+						}
+						}		
+						
+							
+						}else if (!completarAccion) {
+							
+							if(historialNumeros.getText().length()<1) {
 								
 								operacionDeNuemros.add(Double.parseDouble(display.getText()));
-								historialNumeros.setText(historialNumeros.getText()+display.getText());
-								completarAccion = true;
+								historialNumeros.setText(display.getText() + "+");
 								
-								Sumar();
+								 completarAccion=true;
+								resultado=null;
+								
+							}else {
+								if(historialNumeros.getText().charAt(historialNumeros.getText().length()-1)=='+') {
+									
+									operacionDeNuemros.add(Double.parseDouble(display.getText()));
+									historialNumeros.setText(historialNumeros.getText()+display.getText());
+									completarAccion = true;
+							
+									Sumar();
+							}
 						}
-					}
-					}
-				
-				
+						}
+					
 				
 			}
 			private void Restar() {
 				
 				
 				if (completarAccion) {
-				if(resultado==null) {//Primera operacion sin un resultado almacenado
-					
-					historialNumeros.setText(historialNumeros.getText() + display.getText());
-					
-					if(ComprobarOperacion(historialNumeros.getText())) {
+					if(resultado==null) {//Primera operacion sin un resultado almacenado
 						
-					operacionDeNuemros.add(Double.parseDouble(display.getText()));
-					
-					
-					double sumar=0;
-					for (int i = operacionDeNuemros.size()-1; i >=0; i--) {
+						historialNumeros.setText(historialNumeros.getText() + display.getText());
 						
-						 sumar=operacionDeNuemros.get(i)-sumar;
-						
-					}
-					
-					display.setText(verificarDecimal(sumar));
-					resultado=display.getText();
-					historialNumeros.setText(historialNumeros.getText()+"-");
-					completarAccion = false;
-					operacionDeNuemros.clear();
-					
-						}
-					//Si existe un resultado se procede acontinuacion
-				}else {	
-					
-					if(ComprobarOperacion(historialNumeros.getText())) {
-						
-					operacionDeNuemros.add(Double.parseDouble(resultado));
-					
-	
-					double sumar=operacionDeNuemros.get(1)-operacionDeNuemros.get(0);
-
-					display.setText(verificarDecimal(sumar));
-					resultado=display.getText();
-					historialNumeros.setText(historialNumeros.getText()+"-");//signo despues del resultado despues del resultado
-					completarAccion = false;
-					
-					operacionDeNuemros.clear();
-					
-					}
-					}		
-					
-						
-					}else if (!completarAccion) {
-						System.out.println(completarAccion);
-						if(historialNumeros.getText().length()<1) {
+						if(ComprobarOperacion(historialNumeros.getText())) {
 							
-							operacionDeNuemros.add(Double.parseDouble(display.getText()));
-							historialNumeros.setText(display.getText() + "-");
-							completarAccion = true;
-							resultado=null;
+						operacionDeNuemros.add(Double.parseDouble(display.getText()));
 						
-						}else {
-							if(historialNumeros.getText().charAt(historialNumeros.getText().length()-1)=='-') {
+						
+						double restar=0;
+						for (int i = operacionDeNuemros.size()-1; i >=0; i--) {
+							
+							 restar=operacionDeNuemros.get(i)-restar;
+							
+						}
+						
+						display.setText(verificarDecimal(restar));
+						resultado=display.getText();
+						resultadoParaBotonIgua=display.getText();
+						historialNumeros.setText(historialNumeros.getText()+"-");
+						completarAccion = false;
+						operacionDeNuemros.clear();
+						
+							}
+						//Si existe un resultado se procede acontinuacion
+					}else {	
+						
+						if(ComprobarOperacion(historialNumeros.getText())) {
+							
+						operacionDeNuemros.add(Double.parseDouble(resultado));
+						
+		
+						double restar=operacionDeNuemros.get(1)-operacionDeNuemros.get(0);
+
+						display.setText(verificarDecimal(restar));
+						resultado=display.getText();
+						resultadoParaBotonIgua=display.getText();
+						historialNumeros.setText(historialNumeros.getText()+"-");//signo despues del resultado despues del resultado
+						completarAccion = false;
+						
+						operacionDeNuemros.clear();
+						
+						}
+						}		
+						
+							
+						}else if (!completarAccion) {
+							
+							if(historialNumeros.getText().length()<1) {
 								
 								operacionDeNuemros.add(Double.parseDouble(display.getText()));
-								historialNumeros.setText(historialNumeros.getText()+display.getText());
-								completarAccion = true;
+								historialNumeros.setText(display.getText() + "-");
 								
-								Restar();
+								 completarAccion=true;
+								resultado=null;
+								
+							}else {
+								if(historialNumeros.getText().charAt(historialNumeros.getText().length()-1)=='-') {
+									
+									operacionDeNuemros.add(Double.parseDouble(display.getText()));
+									historialNumeros.setText(historialNumeros.getText()+display.getText());
+									completarAccion = true;
+							
+									Restar();
+							}
 						}
-					}
-					}
-				
+						}
+					
 				
 				
 			}					
@@ -607,7 +977,7 @@ public class Calculadora extends JFrame {
 				
 			}
 			private boolean ComprobarOperacion(String historial) {
-				System.out.println(historial);
+				
 				for (int i = 0; i < historial.length(); i++) {
 				
 					if (historial.charAt(i) == '÷' || historial.charAt(i) == '+' || historial.charAt(i) == '-'
@@ -647,18 +1017,58 @@ public class Calculadora extends JFrame {
 
 				StringBuilder BorrarPrimerDigito = new StringBuilder(digito);
 				String primerDigito = display.getText();
-
-				if (BorrarPrimerDigito.charAt(0) == '0') {
-
+				
+				if (BorrarPrimerDigito.charAt(0) == '0' ) {
+					
 					BorrarPrimerDigito = BorrarPrimerDigito.deleteCharAt(0);
 					primerDigito = BorrarPrimerDigito.toString();
+					
 
 				}
 				return primerDigito;
 			}
 
 		}
-
+		private boolean BorrarDigitoViejo(String viejo,String numero,estadoBotones estado,estadoBotones botonUso) {
+			
+			if(viejo.length()>1){
+			if (viejo.charAt(viejo.length()-1)=='÷' || viejo.charAt(viejo.length()-1)=='+' || 
+					viejo.charAt(viejo.length()-1)=='-' || viejo.charAt(viejo.length()-1)=='x') {
+				
+				
+				if(!SeElimino) {
+					SeElimino(viejo, numero, estado, botonUso);
+				}else {
+					if(aumentoElSignoEnHistorial==viejo.length()) {
+						display.setText(display.getText()+numero);
+					}
+					else SeElimino(viejo, numero, estado, botonUso);
+					return true;
+				}
+				
+				return true;
+			}else {
+				
+				if(estadoDeLosBotones==estadoBotones.INACTIVO) {
+					
+					SeElimino=false;
+					return false;
+				} 
+				else return true;
+			}	
+			
+		}
+			return false;
+		}
+		private void SeElimino(String viejo,String numero,estadoBotones estado,estadoBotones botonUso) {
+			
+			display.setText(numero);
+			SeElimino=true;
+			estado= estadoBotones.ACTIVO;
+			estadoDeLosBotones=estado;
+			BotonEnUso=botonUso;
+			aumentoElSignoEnHistorial= viejo.length();
+		}
 		private ImageIcon ImagenCE() {
 
 			ImageIcon icono = new ImageIcon("src/Layouts/imagenes/CE.png");
