@@ -19,6 +19,7 @@ public class Calculadora extends JFrame {
 	private JTextField historialNumeros;
 	private PanelDeTeclas mipanel;
 	private String resultadoParaBotonIgua;//Almacena el resultado cuando se necesita usar =
+	private String resultadoParaBotonIgua2;
 	private boolean UsoIgual=false;//Si uso el boton igual
 	private boolean SeElimino=false;//Borrar digito ingresado anteriormente
 	private estadoBotones estadoDeLosBotones;
@@ -26,8 +27,9 @@ public class Calculadora extends JFrame {
 	private int aumentoElSignoEnHistorial=0;
 	private ArrayList<Double> operacionDeNuemros = new ArrayList<Double>();
 	private boolean completarAccion = false;//si en memoria existe un operador ej: /,-,*
-	private String resultado;//almacena la operacion resultante y el otro se usa para cuando se presiona =
-	
+	private String resultadoDeLaOperacion;//almacena la operacion resultante y el otro se usa para cuando se presiona =
+	private static String signoEnUso="";
+	private char caracte [] = {'÷','x','-','+'};
 	
 	public Calculadora() {
 
@@ -65,7 +67,6 @@ public class Calculadora extends JFrame {
 		display.setEditable(false);
 		display.requestFocus();
 		display.addKeyListener(new ResponderAlTeclado());
-		
 		historialNumeros = new JTextField("", 16);
 		historialNumeros.setFont(new Font("Arial Rounded MT Bold", Font.PLAIN, 20));
 		historialNumeros.setBackground(new Color(14, 20, 13));
@@ -254,7 +255,11 @@ public class Calculadora extends JFrame {
 					display.setText("0");
 					historialNumeros.setText("");
 					 completarAccion = false;
+					 signoEnUso="";
+					 resultadoParaBotonIgua2="";
 					 operacionDeNuemros.clear();
+					 resultadoDeLaOperacion="";
+					 resultadoParaBotonIgua="";
 					 
 				} else if (e.getSource() == retroceso) {
 
@@ -266,9 +271,27 @@ public class Calculadora extends JFrame {
 						
 						ExisteENHistorialIgual();
 						operacionDeNuemros.clear();
+						resultadoDeLaOperacion=resultadoParaBotonIgua2;
 						Dividir();
-					}else Dividir();
-					
+					}else {
+						String antiguoSigno=signoEnUso;
+						signoEnUso="÷";
+						
+						if(antiguoSigno.contains("x")||antiguoSigno.contains("+")||antiguoSigno.contains("-")) {
+							
+							if(antiguoSigno.charAt(antiguoSigno.length()-1)=='-'||antiguoSigno.charAt(antiguoSigno.length()-1)=='+'
+									||antiguoSigno.charAt(antiguoSigno.length()-1)=='x') {
+											
+								StringBuilder cadenaModi = new StringBuilder(historialNumeros.getText());//Creamos un builder a partir del String original
+								cadenaModi.setCharAt(historialNumeros.getText().length()-1,signoEnUso.charAt(0));//Realizamos cambios
+												historialNumeros.setText(cadenaModi.toString());
+							}
+								
+							}else {
+								
+								Dividir();
+							}
+						}
 					
 				} else if (e.getSource() == siete) {
 						
@@ -276,7 +299,7 @@ public class Calculadora extends JFrame {
 						if(UsoIgual) {
 							display.setText("");
 							resultadoParaBotonIgua="";
-							resultado="";
+							resultadoDeLaOperacion="";
 							operacionDeNuemros.clear();
 							completarAccion=false;
 							UsoIgual=false;
@@ -298,7 +321,7 @@ public class Calculadora extends JFrame {
 					if(UsoIgual) {
 						display.setText("");
 						resultadoParaBotonIgua="";
-						resultado="";
+						resultadoDeLaOperacion="";
 						operacionDeNuemros.clear();
 						completarAccion=false;
 						UsoIgual=false;
@@ -320,7 +343,7 @@ public class Calculadora extends JFrame {
 					if(UsoIgual) {
 						display.setText("");
 						resultadoParaBotonIgua="";
-						resultado="";
+						resultadoDeLaOperacion="";
 						operacionDeNuemros.clear();
 						completarAccion=false;
 						UsoIgual=false;
@@ -342,9 +365,29 @@ public class Calculadora extends JFrame {
 						
 						ExisteENHistorialIgual();
 						operacionDeNuemros.clear();
+						resultadoDeLaOperacion=resultadoParaBotonIgua2;
 						Multiplicar();
 						
-					}else Multiplicar();
+					}else  {
+						
+						String antiguoSigno=signoEnUso;
+						signoEnUso="x";
+						
+						if(antiguoSigno.contains("÷")||antiguoSigno.contains("+")||antiguoSigno.contains("-")) {
+							
+							if(antiguoSigno.charAt(antiguoSigno.length()-1)=='÷'||antiguoSigno.charAt(antiguoSigno.length()-1)=='+'
+									||antiguoSigno.charAt(antiguoSigno.length()-1)=='-') {
+											
+								StringBuilder cadenaModi = new StringBuilder(historialNumeros.getText());//Creamos un builder a partir del String original
+								cadenaModi.setCharAt(historialNumeros.getText().length()-1,signoEnUso.charAt(0));//Realizamos cambios
+												historialNumeros.setText(cadenaModi.toString());
+							}
+								
+							}else {
+								
+								Multiplicar();
+							}
+						}
 					
 				}else if(e.getSource() == cuatro) {
 					
@@ -352,7 +395,7 @@ public class Calculadora extends JFrame {
 					if(UsoIgual) {
 						display.setText("");
 						resultadoParaBotonIgua="";
-						resultado="";
+						resultadoDeLaOperacion="";
 						operacionDeNuemros.clear();
 						completarAccion=false;
 						UsoIgual=false;
@@ -374,7 +417,7 @@ public class Calculadora extends JFrame {
 					if(UsoIgual) {
 						display.setText("");
 						resultadoParaBotonIgua="";
-						resultado="";
+						resultadoDeLaOperacion="";
 						operacionDeNuemros.clear();
 						completarAccion=false;
 						UsoIgual=false;
@@ -396,7 +439,7 @@ public class Calculadora extends JFrame {
 					if(UsoIgual) {
 						display.setText("");
 						resultadoParaBotonIgua="";
-						resultado="";
+						resultadoDeLaOperacion="";
 						operacionDeNuemros.clear();
 						completarAccion=false;
 						UsoIgual=false;
@@ -418,9 +461,27 @@ public class Calculadora extends JFrame {
 						
 						ExisteENHistorialIgual();
 						operacionDeNuemros.clear();
+						resultadoDeLaOperacion=resultadoParaBotonIgua2;
 						Restar();
-					}
-					else Restar();
+					}else {
+						String antiguoSigno=signoEnUso;
+						signoEnUso="-";
+						
+					if(antiguoSigno.contains("x")||antiguoSigno.contains("÷")||antiguoSigno.contains("+")) {
+						
+						if(antiguoSigno.charAt(antiguoSigno.length()-1)=='÷'||antiguoSigno.charAt(antiguoSigno.length()-1)=='+'
+								||antiguoSigno.charAt(antiguoSigno.length()-1)=='x') {
+										
+							StringBuilder cadenaModi = new StringBuilder(historialNumeros.getText());//Creamos un builder a partir del String original
+							cadenaModi.setCharAt(historialNumeros.getText().length()-1,signoEnUso.charAt(0));//Realizamos cambios
+											historialNumeros.setText(cadenaModi.toString());
+						}
+
+					}else {	
+							Restar();
+							}
+						}
+					
 					
 				}else if(e.getSource() == uno) {
 					
@@ -428,7 +489,7 @@ public class Calculadora extends JFrame {
 					if(UsoIgual) {
 						display.setText("");
 						resultadoParaBotonIgua="";
-						resultado="";
+						resultadoDeLaOperacion="";
 						operacionDeNuemros.clear();
 						completarAccion=false;
 						UsoIgual=false;
@@ -448,9 +509,10 @@ public class Calculadora extends JFrame {
 					
 					ExisteENHistorialIgual();
 					if(UsoIgual) {
+						
 						display.setText("");
 						resultadoParaBotonIgua="";
-						resultado="";
+						resultadoDeLaOperacion="";
 						operacionDeNuemros.clear();
 						completarAccion=false;
 						UsoIgual=false;
@@ -472,7 +534,7 @@ public class Calculadora extends JFrame {
 					if(UsoIgual) {
 						display.setText("");
 						resultadoParaBotonIgua="";
-						resultado="";
+						resultadoDeLaOperacion="";
 						operacionDeNuemros.clear();
 						completarAccion=false;
 						UsoIgual=false;
@@ -490,13 +552,31 @@ public class Calculadora extends JFrame {
 					
 				}else if(e.getSource() == mas) {
 					
-						if(UsoIgual) {
+					if(UsoIgual) {
 						
 						ExisteENHistorialIgual();
 						operacionDeNuemros.clear();
+						resultadoDeLaOperacion=resultadoParaBotonIgua2;
 						Sumar();
-					}
-					else Sumar();
+					}else {
+						String antiguoSigno=signoEnUso;
+						signoEnUso="+";
+						
+						if(antiguoSigno.contains("x")||antiguoSigno.contains("÷")||antiguoSigno.contains("-")) {
+							
+							if(antiguoSigno.charAt(antiguoSigno.length()-1)=='÷'||antiguoSigno.charAt(antiguoSigno.length()-1)=='-'
+									||antiguoSigno.charAt(antiguoSigno.length()-1)=='x') {
+											
+								StringBuilder cadenaModi = new StringBuilder(historialNumeros.getText());//Creamos un builder a partir del String original
+								cadenaModi.setCharAt(historialNumeros.getText().length()-1,signoEnUso.charAt(0));//Realizamos cambios
+												historialNumeros.setText(cadenaModi.toString());
+							}
+								
+							}else {
+								
+								Sumar();
+							}
+						}
 					
 				}else if(e.getSource() == posi_negat) {
 					
@@ -512,7 +592,7 @@ public class Calculadora extends JFrame {
 					if(UsoIgual) {
 						display.setText("0");
 						resultadoParaBotonIgua="";
-						resultado="";
+						resultadoDeLaOperacion="";
 						operacionDeNuemros.clear();
 						completarAccion=false;
 						UsoIgual=false;
@@ -529,11 +609,6 @@ public class Calculadora extends JFrame {
 						
 					if(!BorrarDigitoViejo(historialNumeros.getText(),"0",estadoDeLosBotones,
 							estadoBotones.CERO))display.setText(display.getText() + "0");
-					
-					
-						
-					
-				
 					
 				}else if(e.getSource() == coma) {
 					if(!display.getText().contains("."))display.setText(display.getText() + ".");
@@ -555,13 +630,15 @@ public class Calculadora extends JFrame {
 				if(historialNumeros.getText().contains("="))historialNumeros.setText("");
 				
 			}
+				
+			
 			private void CompletarResultadoConIgual() {
 				
 				
 				String resultado="";
 				int cantidadDeOperador=0;
 				
-				if(historialNumeros.getText().contains("÷")) {//si es dividir
+				if(historialNumeros.getText().charAt(historialNumeros.getText().length()-1)=='÷') {//si es dividir
 				
 					for (int i = 0; i < historialNumeros.getText().length(); i++) {
 						
@@ -579,13 +656,28 @@ public class Calculadora extends JFrame {
 						}else cantidadDeOperador++;
 						
 					}
+					double dividir = 0;
 				
-					double dividir= Double.parseDouble(resultado)/ Double.parseDouble(display.getText());
+					if(resultadoParaBotonIgua2!=null) {
+						if(!resultadoParaBotonIgua2.isEmpty()) {
+							
+							dividir= Double.parseDouble(resultadoParaBotonIgua2)/Double.parseDouble(display.getText());
+						}
+						
+					}else {
+						
+						if(resultado.contains("+")||resultado.contains("x")||resultado.contains("-")
+								||resultado.contains("÷")) {
+							dividir= Double.parseDouble(resultadoDeLaOperacion)/Double.parseDouble(display.getText());
+						}else dividir= Double.parseDouble(resultado)/Double.parseDouble(display.getText());
+							
+					}
 					resultado=verificarDecimal(dividir);
 					historialNumeros.setText(historialNumeros.getText()+display.getText()+"=");
 					cantidadDeOperador=0;
+					signoEnUso="";
 					
-				}else if(historialNumeros.getText().contains("x")) {//si es multiplicar
+				}else if(historialNumeros.getText().charAt(historialNumeros.getText().length()-1)=='x') {//si es multiplicar
 				
 					for (int i = 0; i < historialNumeros.getText().length(); i++) {
 						
@@ -601,15 +693,30 @@ public class Calculadora extends JFrame {
 								
 							}
 						}else cantidadDeOperador++;
-						
+						signoEnUso="";
 					}
 				
-					double dividir= Double.parseDouble(resultado)* Double.parseDouble(display.getText());
-					resultado=verificarDecimal(dividir);
+					double por = 0;
+					
+					if(resultadoParaBotonIgua2!=null) {
+						if(!resultadoParaBotonIgua2.isEmpty()) {
+							
+							por= Double.parseDouble(resultadoParaBotonIgua2)*Double.parseDouble(display.getText());
+						}
+						
+					}else {
+						
+						if(resultado.contains("+")||resultado.contains("x")||resultado.contains("-")
+								||resultado.contains("÷")) {
+							por= Double.parseDouble(resultadoDeLaOperacion)/Double.parseDouble(display.getText());
+						}else por= Double.parseDouble(resultado)*Double.parseDouble(display.getText());
+							
+					}
+					resultado=verificarDecimal(por);
 					historialNumeros.setText(historialNumeros.getText()+display.getText()+"=");
 					cantidadDeOperador=0;
-					
-				}else if(historialNumeros.getText().contains("+")) {//si es sumar
+					signoEnUso="";
+				}else if(historialNumeros.getText().charAt(historialNumeros.getText().length()-1)=='+') {//si es sumar
 				
 					for (int i = 0; i < historialNumeros.getText().length(); i++) {
 						
@@ -628,12 +735,27 @@ public class Calculadora extends JFrame {
 						
 					}
 				
-					double dividir= Double.parseDouble(resultado)+ Double.parseDouble(display.getText());
-					resultado=verificarDecimal(dividir);
+					double mas = 0;
+					
+					if(resultadoParaBotonIgua2!=null) {
+						if(!resultadoParaBotonIgua2.isEmpty()) {
+							
+							mas= Double.parseDouble(resultadoParaBotonIgua2)+Double.parseDouble(display.getText());
+						}
+						
+					}else {
+						
+						if(resultado.contains("+")||resultado.contains("x")||resultado.contains("-")
+								||resultado.contains("÷")) {
+							mas= Double.parseDouble(resultadoDeLaOperacion)+Double.parseDouble(display.getText());
+						}else mas= Double.parseDouble(resultado)*Double.parseDouble(display.getText());
+							
+					}
+					resultado=verificarDecimal(mas);
 					historialNumeros.setText(historialNumeros.getText()+display.getText()+"=");
 					cantidadDeOperador=0;
-					
-				}else if(historialNumeros.getText().contains("-")) {//si es menos
+					signoEnUso="";
+				}else if(historialNumeros.getText().charAt(historialNumeros.getText().length()-1)=='-') {//si es menos
 				
 					for (int i = 0; i < historialNumeros.getText().length(); i++) {
 						
@@ -651,14 +773,31 @@ public class Calculadora extends JFrame {
 						}else cantidadDeOperador++;
 						
 					}
-				
-					double dividir= Double.parseDouble(resultado)- Double.parseDouble(display.getText());
-					resultado=verificarDecimal(dividir);
+					double menos = 0;
+					
+					if(resultadoParaBotonIgua2!=null) {
+						if(!resultadoParaBotonIgua2.isEmpty()) {
+							
+							menos= Double.parseDouble(resultadoParaBotonIgua2)*Double.parseDouble(display.getText());
+						}
+						
+					}else {
+						
+						if(resultado.contains("+")||resultado.contains("x")||resultado.contains("-")
+								||resultado.contains("÷")) {
+							menos= Double.parseDouble(resultadoDeLaOperacion)-Double.parseDouble(display.getText());
+						}else menos= Double.parseDouble(resultado)-Double.parseDouble(display.getText());
+							
+					}
+					resultado=verificarDecimal(menos);
 					historialNumeros.setText(historialNumeros.getText()+display.getText()+"=");
 					cantidadDeOperador=0;
+					signoEnUso="";
+					
 				}
 				display.setText(resultado);
-				//historialNumeros.setText("");
+				resultadoParaBotonIgua2=display.getText();
+				
 				UsoIgual=true;
 				resultado="";
 				completarAccion=false;
@@ -668,7 +807,7 @@ public class Calculadora extends JFrame {
 				
 				
 				if (completarAccion) {
-				if(resultado==null) {//Primera operacion sin un resultado almacenado
+				if(resultadoDeLaOperacion==null) {//Primera operacion sin un resultado almacenado
 					
 					historialNumeros.setText(historialNumeros.getText() + display.getText());
 					
@@ -685,7 +824,7 @@ public class Calculadora extends JFrame {
 					}
 					
 					display.setText(verificarDecimal(divid));
-					resultado=display.getText();
+					resultadoDeLaOperacion=display.getText();
 					resultadoParaBotonIgua=display.getText();
 					historialNumeros.setText(historialNumeros.getText()+"÷");
 					completarAccion = false;
@@ -697,13 +836,13 @@ public class Calculadora extends JFrame {
 					
 					if(ComprobarOperacion(historialNumeros.getText())) {
 						
-					operacionDeNuemros.add(Double.parseDouble(resultado));
+					operacionDeNuemros.add(Double.parseDouble(resultadoDeLaOperacion));
 					
 	
 					double divid=operacionDeNuemros.get(1)/operacionDeNuemros.get(0);
 
 					display.setText(verificarDecimal(divid));
-					resultado=display.getText();
+					resultadoDeLaOperacion=display.getText();
 					resultadoParaBotonIgua=display.getText();
 					historialNumeros.setText(historialNumeros.getText()+"÷");//signo despues del resultado despues del resultado
 					completarAccion = false;
@@ -720,9 +859,9 @@ public class Calculadora extends JFrame {
 							
 							operacionDeNuemros.add(Double.parseDouble(display.getText()));
 							historialNumeros.setText(display.getText() + "÷");
-							
 							 completarAccion=true;
-							resultado=null;
+							
+							resultadoDeLaOperacion=null;
 							
 						}else {
 							if(historialNumeros.getText().charAt(historialNumeros.getText().length()-1)=='÷') {
@@ -743,7 +882,7 @@ public class Calculadora extends JFrame {
 				
 				
 				if (completarAccion) {
-					if(resultado==null) {//Primera operacion sin un resultado almacenado
+					if(resultadoDeLaOperacion==null) {//Primera operacion sin un resultado almacenado
 						
 						historialNumeros.setText(historialNumeros.getText() + display.getText());
 						
@@ -760,7 +899,7 @@ public class Calculadora extends JFrame {
 						}
 						
 						display.setText(verificarDecimal(Multiplicar));
-						resultado=display.getText();
+						resultadoDeLaOperacion=display.getText();
 						resultadoParaBotonIgua=display.getText();
 						historialNumeros.setText(historialNumeros.getText()+"x");
 						completarAccion = false;
@@ -772,13 +911,13 @@ public class Calculadora extends JFrame {
 						
 						if(ComprobarOperacion(historialNumeros.getText())) {
 							
-						operacionDeNuemros.add(Double.parseDouble(resultado));
+						operacionDeNuemros.add(Double.parseDouble(resultadoDeLaOperacion));
 						
 		
 						double divid=operacionDeNuemros.get(1)*operacionDeNuemros.get(0);
 
 						display.setText(verificarDecimal(divid));
-						resultado=display.getText();
+						resultadoDeLaOperacion=display.getText();
 						resultadoParaBotonIgua=display.getText();
 						historialNumeros.setText(historialNumeros.getText()+"x");//signo despues del resultado despues del resultado
 						completarAccion = false;
@@ -797,7 +936,7 @@ public class Calculadora extends JFrame {
 								historialNumeros.setText(display.getText() + "x");
 								
 								 completarAccion=true;
-								resultado=null;
+								resultadoDeLaOperacion=null;
 								
 							}else {
 								if(historialNumeros.getText().charAt(historialNumeros.getText().length()-1)=='x') {
@@ -818,7 +957,7 @@ public class Calculadora extends JFrame {
 				
 				
 				if (completarAccion) {
-					if(resultado==null) {//Primera operacion sin un resultado almacenado
+					if(resultadoDeLaOperacion==null) {//Primera operacion sin un resultado almacenado
 						
 						historialNumeros.setText(historialNumeros.getText() + display.getText());
 						
@@ -835,7 +974,7 @@ public class Calculadora extends JFrame {
 						}
 						
 						display.setText(verificarDecimal(sumar));
-						resultado=display.getText();
+						resultadoDeLaOperacion=display.getText();
 						resultadoParaBotonIgua=display.getText();
 						historialNumeros.setText(historialNumeros.getText()+"+");
 						completarAccion = false;
@@ -847,13 +986,13 @@ public class Calculadora extends JFrame {
 						
 						if(ComprobarOperacion(historialNumeros.getText())) {
 							
-						operacionDeNuemros.add(Double.parseDouble(resultado));
+						operacionDeNuemros.add(Double.parseDouble(resultadoDeLaOperacion));
 						
 		
 						double sumar=operacionDeNuemros.get(1)+operacionDeNuemros.get(0);
 
 						display.setText(verificarDecimal(sumar));
-						resultado=display.getText();
+						resultadoDeLaOperacion=display.getText();
 						resultadoParaBotonIgua=display.getText();
 						historialNumeros.setText(historialNumeros.getText()+"+");//signo despues del resultado despues del resultado
 						completarAccion = false;
@@ -872,7 +1011,7 @@ public class Calculadora extends JFrame {
 								historialNumeros.setText(display.getText() + "+");
 								
 								 completarAccion=true;
-								resultado=null;
+								resultadoDeLaOperacion=null;
 								
 							}else {
 								if(historialNumeros.getText().charAt(historialNumeros.getText().length()-1)=='+') {
@@ -892,7 +1031,7 @@ public class Calculadora extends JFrame {
 				
 				
 				if (completarAccion) {
-					if(resultado==null) {//Primera operacion sin un resultado almacenado
+					if(resultadoDeLaOperacion==null) {//Primera operacion sin un resultado almacenado
 						
 						historialNumeros.setText(historialNumeros.getText() + display.getText());
 						
@@ -909,7 +1048,7 @@ public class Calculadora extends JFrame {
 						}
 						
 						display.setText(verificarDecimal(restar));
-						resultado=display.getText();
+						resultadoDeLaOperacion=display.getText();
 						resultadoParaBotonIgua=display.getText();
 						historialNumeros.setText(historialNumeros.getText()+"-");
 						completarAccion = false;
@@ -921,13 +1060,13 @@ public class Calculadora extends JFrame {
 						
 						if(ComprobarOperacion(historialNumeros.getText())) {
 							
-						operacionDeNuemros.add(Double.parseDouble(resultado));
+						operacionDeNuemros.add(Double.parseDouble(resultadoDeLaOperacion));
 						
 		
 						double restar=operacionDeNuemros.get(1)-operacionDeNuemros.get(0);
 
 						display.setText(verificarDecimal(restar));
-						resultado=display.getText();
+						resultadoDeLaOperacion=display.getText();
 						resultadoParaBotonIgua=display.getText();
 						historialNumeros.setText(historialNumeros.getText()+"-");//signo despues del resultado despues del resultado
 						completarAccion = false;
@@ -946,7 +1085,7 @@ public class Calculadora extends JFrame {
 								historialNumeros.setText(display.getText() + "-");
 								
 								 completarAccion=true;
-								resultado=null;
+								resultadoDeLaOperacion=null;
 								
 							}else {
 								if(historialNumeros.getText().charAt(historialNumeros.getText().length()-1)=='-') {
