@@ -1,0 +1,93 @@
+import java.awt.EventQueue;
+import java.util.Iterator;
+
+import javax.swing.JOptionPane;
+
+public class Euclides {
+	
+	static boolean salir=false;
+	static int a=0;
+	static int b=0;
+	public static void main(String[] args) {
+		
+		JOptionPane.showMessageDialog(null,"Este programa calcula Maximo comun divisor y halla el inverso. mcd(a,b)=Sa+Tb");
+		
+		while(!salir) {
+			
+			try {
+				
+			
+				do {
+					
+						
+				a=Integer.parseInt(JOptionPane.showInputDialog("Ingrese el valor de a "," mcd(a,b"));
+				b=Integer.parseInt(JOptionPane.showInputDialog("Ingrese el valor de b "," mcd(a,b"));
+				
+				if(a==0 && b==0) JOptionPane.showMessageDialog(null,"Valor no admitido","Ingrese enteros mayor a 0",JOptionPane.INFORMATION_MESSAGE);
+					
+				}while(a==0 && b==0);
+				
+					Mostrar(a,b);	
+				int x=JOptionPane.showConfirmDialog(null,"¿Desea salir?","EXIT",JOptionPane.YES_NO_OPTION);
+				
+				if(x==0) {
+					salir=true;
+					System.exit(0);
+				}
+				
+			} catch (Exception e) {
+				
+				JOptionPane.showMessageDialog(null,"Valor no admitido","Ingrese enteros",JOptionPane.INFORMATION_MESSAGE);
+			}
+			
+		}
+		
+		
+	}
+public static void Mostrar(int a,int b) {
+	
+	long  mcd,S,T;
+	 long[] resul=euclidesExtendido(a,b);
+	
+	
+		mcd=resul[0];
+		S=resul[1];
+		T=resul[2];
+				
+	JOptionPane.showMessageDialog(null,"MCD("+a+","+b+") es= "+mcd+"\n"
+			+ "S= "+S
+			+"\nT= "+T);
+	
+}
+public static long[] euclidesExtendido(long a, long b) 
+{
+ long[] resp = new long[3];
+ long x=0,y=0,d=0;
+ if(b==0)
+ {
+  resp[0] = a; resp[1] = 1; resp[2] = 0;
+ } 
+ else
+ {
+  long x2 = 1, x1 = 0, y2 = 0, y1 = 1;
+  long q = 0, r = 0;
+  while(b>0)
+  {
+   q = (a/b);
+   r = a - q*b;
+   x = x2-q*x1;
+   y = y2 - q*y1;
+   a = b;
+   b = r;
+   x2 = x1;
+   x1 = x;
+   y2 = y1;
+   y1 = y;
+  }
+  resp[0] = a;
+  resp[1] = x2;
+  resp[2] = y2;
+    }
+ return resp;  
+    } 
+}
